@@ -1,0 +1,11 @@
+--- /usr/share/perl5/vendor_perl/Mail/SpamAssassin/DnsResolver.pm.orig	2018-10-16 00:42:46.751946456 +0200
++++ /usr/share/perl5/vendor_perl/Mail/SpamAssassin/DnsResolver.pm	2018-10-02 16:40:35.381431661 +0200
+@@ -547,7 +547,7 @@
+   eval {
+ 
+     if (utf8::is_utf8($domain)) {  # since Perl 5.8.1
+-      info("dns: new_dns_packet: domain is utf8 flagged: %s", $domain);
++      dbg("dns: new_dns_packet: domain is utf8 flagged: %s", $domain);
+     }
+ 
+     $domain =~ s/\.*\z/./s;

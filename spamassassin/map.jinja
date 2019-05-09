@@ -1,0 +1,26 @@
+---
+{% import_yaml "spamassassin/defaults.yaml" as defaults %}
+
+{% set os_family_map = salt['grains.filter_by']({
+    'RedHat': {
+      'package':            'spamassassin',
+      'milter_pkg':         'spamass-milter',
+      'milter_postfix_pkg': 'spamass-milter-postfix',
+      'service':            'spamassassin',
+      'config_dir':         '/etc/mail/spamassassin',
+      'channel_dir':        '/etc/mail/spamassassin/channel.d',
+      'extra_packages':     [],
+      'local_packages':     [],
+    }
+  },
+  grain='os_family',
+  merge=salt['pillar.get']('spamassassin:lookup'))
+%}
+
+{% do defaults.spamassassin.update(os_family_map) %}
+
+{% set spamassassin = salt['pillar.get'](
+    'spamassassin',
+    default=defaults.spamassassin,
+    merge=True, merge_nested_lists=True)
+%}

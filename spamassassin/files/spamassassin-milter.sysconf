@@ -1,0 +1,89 @@
+{%- set options_table = {
+  'socket': 'p',
+  'redirect_rewrite_address': 'b',
+  'redirect_keep_address': 'B',
+  'rejectcode': 'C',
+  'debugflags': 'd',
+  'host': 'H',
+  'defaultdomain': 'e',
+  'group': 'g',
+  'ignore_networks': 'i',
+  'ignore_smtp_auth': 'I',
+  'no_rewrite_headers': 'm',
+  'no_headers': 'M',
+  'pidfile': 'P',
+  'rejectscore': 'r',
+  'rejecttext': 'R',
+  'sendmail_bin': 'S',
+  'defaultuser': 'u',
+  'sendmail_lookup': 'x',
+} -%}
+{%- set options_bool = [
+  'ignore_smtp_auth',
+  'no_rewrite_headers',
+  'no_headers',
+  'sendmail_lookup'
+] -%}
+{%- macro print_option(key, indent=True, line_continuation=True) %}
+{%-   if indent -%}
+{%-     set in = '	' -%}
+{%-   else -%}
+{%-     set in = '' -%}
+{%-   endif -%}
+{%-   if line_continuation -%}
+{%-     set bs = ' \\' -%}
+{%-   else -%}
+{%-     set bs = '' -%}
+{%-   endif -%}
+{%-   set oname = options_table[key] -%}
+{%-   set ovalue = options[key] -%}
+{%-   if ovalue == True -%}
+{{in}}-{{ oname }}{{ bs }}
+{%-   elif ovalue is iterable and ovalue is not string -%}
+{{ in }}-{{ oname }} {{ ovalue | join(',') }}{{ bs }}
+{%-   elif ovalue is string and ' ' in ovalue -%}
+{{ in }}-{{ oname }} {{ ovalue | quote }}{{ bs }}
+{%-   else -%}
+{{ in }}-{{ oname }} {{ ovalue }}{{ bs }}
+{%-   endif -%}
+{%- endmacro -%}
+#
+# Managed by SaltStack
+#
+### Override for your different local config if necessary
+{%- if 'socket' in options %}
+SOCKET={{ options['socket'] }}
+{%- else %}
+#SOCKET=/run/spamass-milter/spamass-milter.sock
+{%- endif %}
+
+### You may add configuration parameters here, see spamass-milter(1)
+###
+### Note that the -x option for expanding aliases and virtusertable entries
+### only works if spamass-milter is run as root; you will need to use
+### spamass-milter-root.service instead of spamass-milter.service if you
+### wish to do this but otherwise it's best to run as the unprivileged user
+### sa-milt by using the normal spamass-milter.service
+{%- for option in options if option not in ['socket', 'spamc_options'] %}
+{%-   if loop.first %}
+EXTRA_FLAGS="{{ print_option(option, False, True) }}
+{%-   elif loop.last %}
+{%-     if 'spamc_options' in options %}
+{{        print_option(option, True, True) }}
+     -- \
+{%-       for option in options['spamc_options'] %}
+{%-         if loop.last %}
+     {{ option }}"
+{%-         else %}
+     {{ option }} \
+{%-         endif %}
+{%-       endfor %}
+{%-     else %}
+{{        print_option(option, True, False) }}"
+{%-     endif %}
+{%-   else %}
+{{      print_option(option) }}
+{%-   endif %}
+{%- else %}
+#EXTRA_FLAGS="-m -r 15"
+{%- endfor %}

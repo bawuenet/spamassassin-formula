@@ -1,0 +1,98 @@
+---
+spamassassin:
+  lookup:
+    extra_packages:
+      - spamassassin-iXhash2
+    local_packages:
+      - salt://salt-master/files/pyzor-1.0.0-16.20180724git751ab3f.noarch.rpm
+    local_plugins:
+      - salt://salt-master/files/HostStats.pm
+
+  plugins:
+    enabled:
+      - TxRep
+      - HostStats
+    disabled:
+      - AWL
+
+  config:
+    required_hits: 5
+    report_safe: 0
+    add_header: all Report _REPORT_
+    dns_server: 127.0.0.1
+    bayes_store_module: Mail::SpamAssassin::BayesStore::MySQL
+    bayes_sql_dsn: DBI:mysql:sa_bayes:localhost
+    bayes_sql_username: sa_bayes
+    bayes_sql_password: 'super-secret'
+    bayes_sql_override_username: sitewide_bayes
+    txrep_factory: Mail::SpamAssassin::SQLBasedAddrList
+    user_awl_dsn: DBI:mysql:sa_txrep:localhost
+    user_awl_sql_username: sa_txrep
+    user_awl_sql_password: 'super-secret'
+    internal_networks: 192.168.0.0/16
+    use_bayes: 1
+    bayes_auto_learn: 1
+    uridnsbl_skip_domain:
+      - googleapis.com
+      - goo.gl
+      - googlegroups.com
+      - docs.google.com
+      - youtu.be
+      - linkedin.com
+      - fbcdn.net
+      - licdn.com
+      - twimg.com
+      - redbox.com
+      - amazon.ca
+      - amazonses.com
+      - amazonaws.com
+      - ssl-images-amazon.com
+      - images-amazon.com
+      - media-amazon.com
+      - instagram.com
+      - pinterest.com
+      - pinimg.com
+      - facebookmail.com
+      - yahoodns.net
+      - tumblr.com
+      - groupon.com
+      - grouponcdn.com
+      - office365.com
+      - booking.com
+
+  whitelist:
+    - postmaster@example.org
+
+  local_rules:
+    LOCAL_BITCOIN_BLACKMAIL:
+      header: Subject =~ /\bChange your password .* immediately\b/i
+      score: 4.0
+
+  spamd:
+    nouser-config: True
+    username: sa-user
+    ipv4-only: True
+    sql-config: True
+    listen:
+      - 127.0.0.1
+    allowed-ips:
+      - 127.0.0.1
+    min-children: 8
+    max-children: 90
+    min-spare: 5
+    max-spare: 20
+    timeout-child: 30
+    allow-tell: True
+
+  milter_postfix: True
+  milter:
+    rejectscore: 7
+    rejecttext: Message exceeding spam threshold.
+    defaultdomain: example.net
+    no_rewrite_headers: True
+    sendmail_bin: /usr/bin/sendmail
+    defaultuser: nobody
+    sendmail_lookup: True
+    ignore_networks: 192.168.0.0/16
+    spamc_options:
+      - '--max-size=5000000'

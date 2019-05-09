@@ -1,0 +1,43 @@
+{%- macro print_option(key, indent=True, line_continuation=True) %}
+{%-   if indent -%}
+{%-     set in = '	' -%}
+{%-   else -%}
+{%-     set in = '' -%}
+{%-   endif -%}
+{%-   if line_continuation -%}
+{%-     set bs = ' \\' -%}
+{%-   else -%}
+{%-     set bs = '' -%}
+{%-   endif -%}
+{%-   set value = options[key] -%}
+{%-   if value == True -%}
+{{in}}--{{ key }}{{ bs }}
+{%-   elif value is iterable and value is not string -%}
+{%-     if key in ['listen'] -%}
+{%-       for val in value -%}
+{%-         if loop.last %}
+{{ in }}--{{ key }}={{ val }}{{ bs }}
+{%-         else -%}
+{{ in }}--{{ key }}={{ val }} \
+{%-         endif -%}
+{%       endfor -%}
+{%-     else -%}
+{{ in }}--{{ key }}={{ value | join(',') }}{{ bs }}
+{%-     endif -%}
+{%-   else -%}
+{{ in }}--{{ key }}={{ value }}{{ bs }}
+{%-   endif -%}
+{%- endmacro -%}
+#
+# Managed by SaltStack
+#
+# Options to spamd
+{%- for option in options %}
+{%-   if loop.first %}
+SPAMDOPTIONS="{{ print_option(option, False, True) }}
+{%-   elif loop.last %}
+{{      print_option(option, True, False) }}"
+{%-   else %}
+{{      print_option(option) }}
+{%-   endif %}
+{%- endfor %}

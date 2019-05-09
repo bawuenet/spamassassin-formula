@@ -1,0 +1,7 @@
+#
+# Salt managed
+#
+
+{%- for plugin in plugins.enabled if plugin not in plugins.disabled %}
+loadplugin Mail::SpamAssassin::Plugin::{{ plugin }}
+{%- endfor %}

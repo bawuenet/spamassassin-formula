@@ -1,0 +1,27 @@
+#
+# Salt managed
+#
+
+{%- for key, value in config.items() %}
+{%-   if value is number or value is string %}
+{%-     set v = value %}
+{%-   elif value is iterable %}
+{%-     set v = value | join(' ') %}
+{%-   endif %}
+{{ key }} {{ v }}
+{%- endfor %}
+
+
+{%- for value in whitelist %}
+whitelist_from {{ value }}
+{%- endfor %}
+
+{%- for value in blacklist %}
+blacklist_from {{ value }}
+{%- endfor %}
+
+{%- for rule in local_rules %}
+
+header {{ rule }}	{{ local_rules[rule]['header'] }}
+score {{ rule }}	{{ local_rules[rule]['score'] }}
+{%- endfor %}
